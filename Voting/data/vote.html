@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=0" />
+    <title>Voting GMIS</title>
+    <style type="text/css">
+        .btn {
+          background: #3498db;
+          background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
+          background-image: -moz-linear-gradient(top, #3498db, #2980b9);
+          background-image: -ms-linear-gradient(top, #3498db, #2980b9);
+          background-image: -o-linear-gradient(top, #3498db, #2980b9);
+          background-image: linear-gradient(to bottom, #3498db, #2980b9);
+          -webkit-border-radius: 28;
+          -moz-border-radius: 28;
+          border-radius: 28px;
+          font-family: Arial;
+          color: #ffffff;
+          font-size: 20px;
+          padding: 10px 20px 10px 20px;
+          text-decoration: none;
+        }
+
+        .btn:hover {
+          background: #3cb0fd;
+          background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
+          background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
+          background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
+          background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
+          background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+          text-decoration: none;
+        }
+    </style>
+    <script type="text/javascript">
+
+        var OOCSI = function() {
+            function g() {
+                f("CONNECTING to " + a), d = new WebSocket(a), d.onopen = function(a) {
+                    h(a)
+                }, d.onclose = function(a) {
+                    i(a)
+                }, d.onmessage = function(a) {
+                    j(a)
+                }, d.onerror = function(a) {
+                    k(a)
+                }
+            }
+            function h(a) {
+                d.readyState == WebSocket.OPEN && (n(b), e = !0), f("CONNECTED")
+            }
+            function i(a) {
+                f("DISCONNECTED")
+            }
+            function j(a) {
+                if (d.send("."), "ping" != a.data) {
+                    try {
+                        var b = JSON.parse(a.data);
+                        void 0 !== c[b.recipient] ? c[b.recipient](b) : f("no handler for event: " + a.data)
+                    } catch (b) {
+                        f("parse exception for event: " + a.data)
+                    }
+                    f("RESPONSE: " + a.data)
+                }
+            }
+            function k(a) {
+                f("ERROR: " + a.data)
+            }
+            function l(a) {
+                d && d.readyState != WebSocket.CONNECTING ? a() : setTimeout(function() {
+                    l(a)
+                }, 200)
+            }
+            function m() {
+                d && d.close()
+            }
+            function n(a) {
+                d && d.send(a) && f("SENT: " + a)
+            }
+            function o(a) {}
+            function p(a, b) {
+                e && n("sendjson " + a + " " + JSON.stringify("string" == typeof b ? {
+                    message: b
+                } : b))
+            }
+            function q(a, b) {
+                e && (n("subscribe " + a), c[a] = b)
+            }
+            function r(a) {
+                e && (n("unsubscribe " + a), c[a] = function() {})
+            }
+            var b,
+                d,
+                a = "ws://localhost:9000/",
+                c = {},
+                e = !1,
+                f = o;
+            return {
+                connect: function(d, e, f) {
+                    a = d, b = e && e.length > 0 ? e : "webclient_" + +new Date, c[e] = f, g()
+                },
+                send: function(a, b) {
+                    p(a, b)
+                },
+                subscribe: function(a, b) {
+                    l(function() {
+                        q(a, b)
+                    })
+                },
+                unsubscribe: function(a) {
+                    l(function() {
+                        r(a)
+                    })
+                },
+                close: function() {
+                    l(function() {
+                        m()
+                    })
+                },
+                handlers: function() {
+                    return c
+                },
+                logger: function(a) {
+                    f = a
+                }
+            }
+        }();
+
+    </script>
+</head>
+<body style="margin:0; padding: 0">
+    <div style="width: 80%; margin: 5% auto; text-align: center;">
+        <button class="btn" id="a">More of group1</button>
+        <button class="btn" id="b">More of group2</button>
+        <button class="btn" id="c">More of group3</button>
+        <button class="btn" id="d">More of group4</button>
+    </div>
+    <script type="text/javascript">
+
+          var domain = 'SERVER_ADDRESS';
+
+          // button handlers
+          document.getElementById('a').onclick = function() { 
+              console.log("voted a");
+              OOCSI.send('votechannel', {'a': 1});
+          };
+          document.getElementById('b').onclick = function() { 
+              console.log("voted b");
+              OOCSI.send('votechannel', {'b': 1});
+          };
+          document.getElementById('c').onclick = function() { 
+              console.log("voted c");
+              OOCSI.send('votechannel', {'c': 1});
+          };
+          document.getElementById('d').onclick = function() { 
+              console.log("voted d");
+              OOCSI.send('votechannel', {'d': 1});
+          };
+
+          // connect to OOCSI server running at SERVER_ADDRESS
+          OOCSI.connect("ws://" + domain + "/ws");
+
+    </script>
+
+</body>
+</html>
